@@ -17,9 +17,9 @@ app.get("/api/employees", async (req, res, next) => {
   }
 });
 
-app.get("/api/notes", async (req, res, next) => {
+app.get("/api/departments", async (req, res, next) => {
   try {
-    const SQL = "SELECT * FROM notes ORDER By created_at DESC";
+    const SQL = "SELECT * FROM departments ORDER By created_at DESC";
     const response = await client.query(SQL);
     res.send(response.rows);
   } catch (error) {
@@ -27,10 +27,10 @@ app.get("/api/notes", async (req, res, next) => {
   }
 });
 
-app.post("/api/notes", async (req, res, next) => {
+app.post("/api/routes", async (req, res, next) => {
   try {
     const SQL = `
-        INSERT INTO notes(txt, category_id)
+        INSERT INTO routes(txt, employee_id)
         VALUES($1, $2)
         RETURNING *;
     `;
@@ -42,7 +42,7 @@ app.post("/api/notes", async (req, res, next) => {
   }
 });
 
-app.put("/api/notes/:id", async (req, res, next) => {});
+app.put("/api/routes/:id", async (req, res, next) => {});
 try {
   const SQL = `
     UPDATE notes
@@ -61,10 +61,10 @@ try {
   next(error);
 }
 
-app.delete("/api/notes/:id", async (req, res, next) => {});
+app.delete("/api/routes/:id", async (req, res, next) => {});
 try {
   const SQL = `
-  DELETE FROM notes
+  DELETE FROM employee
     WHERE id = $3;
     `;
 
@@ -79,7 +79,7 @@ app.use((err, req, res, next) => {
 });
 
 const client = new pg.Client(
-  process.env.DATABASE_URL || "postgres://localhost/acme_hr_directory_db"
+  process.env.DATABASE_URL || "postgres://localhost/acme_hr_directory_"
 );
 
 async function init() {
