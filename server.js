@@ -27,44 +27,40 @@ app.get("/api/departments", async (req, res, next) => {
   }
 });
 
-app.post("/api/routes", async (req, res, next) => {
+app.post("/api/employees", async (req, res, next) => {
   try {
     const SQL = `
-        INSERT INTO routes(txt, employee_id)
+        INSERT INTO employees(name, department_id)
         VALUES($1, $2)
         RETURNING *;
     `;
-    const { text, employee_id } = req.body;
-    const response = await client.query(SQL, [text, category]);
+    const { name, department_id } = req.body;
+    const response = await client.query(SQL, [name, department_id]);
     res.send(response.rows[0]);
   } catch (error) {
     next(error);
   }
 });
 
-app.put("/api/routes/:id", async (req, res, next) => {});
+app.put("/api/employees/:id", async (req, res, next) => {
 try {
   const SQL = `
-    UPDATE notes
-    SET text=$1, ranking=$2, employee_id=$3, updated_at=now()
-    WHERE id = $4;
+    UPDATE employees
+    SET name=$1, department_id=$2, updated_at=now()
+    WHERE id = $3;
     `;
-  const { text, ranking, employee_id } = req.body;
-  const response = await client.query(SQL, [
-    text,
-    ranking,
-    category_id,
-    req.params.id,
-  ]);
-  res.send(response.rows)[0];
+  const { name, department_id } = req.body;
+  const response = await client.query(SQL, [name, department_id, req.params.id]);
+  res.send(response.rows[0]);
 } catch (error) {
   next(error);
 }
+});
 
-app.delete("/api/routes/:id", async (req, res, next) => {});
+app.delete("/api/employees/:id", async (req, res, next) => {
 try {
   const SQL = `
-  DELETE FROM employee
+  DELETE FROM employees
     WHERE id = $3;
     `;
 
@@ -73,43 +69,44 @@ try {
 } catch (error) {
   next(error);
 }
+});
 
 app.use((err, req, res, next) => {
   res.status(500).send({ error: err.message });
 });
 
 const client = new pg.Client(
-  process.env.DATABASE_URL || "postgres://localhost/acme_hr_directory_"
+  process.env.DATABASE_URL || "postgres://localhost/acme_hr_directory_db"
 );
 
 async function init() {
   client.connect();
 
   const SQL = `
-  DROP TABLE IF EXISTS notes;
-  DROP TABLE IF EXISTS categories;
-
-  CREATE TABLE employees(
+  DROP TABLE IF EXISTS employees;
+  DROP TABLE IF EXISTS departments;
+  
+  CREATE TABLE departments(
     id SERIAL PRIMARY KEY,
     name VARCHAR(30) NOT NULL
   );
 
-  CREATE TABLE notes(
+  CREATE TABLE employees(
     id SERIAL PRIMARY KEY,
     name TEXT,
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now(),
-    department_id INTEGER REFERENCES department(id) NOT NULL
+    department_id INTEGER REFERENCES departments(id) NOT NULL
    );
 
-   INSERT INTO employees(name) VALUES('Id);
-   INSERT INTO employees(name) VALUES('Department');
+   INSERT INTO departments(name) VALUES('IT');
+   INSERT INTO departments(name) VALUES('HR');
    
-   INSERT INTO notes(txt, employee_id)
-   VALUES('Employee name', (SELECT if FROM categories WHERE name = 'Work'))
+   INSERT INTO employees(name, department_id)
+   VALUES('John Doe', (SELECT id FROM departments WHERE name = 'IT'));
 
-   INSERT INTO notes(txt, employee_id)
-   VALUES('Department', (SELECT if FROM categories WHERE name = 'Department'))
+   INSERT INTO employees(name, department_id)
+   VALUES('Jane Smith', (SELECT id FROM departments WHERE name = 'HR'));
  `;
 
   await client.query(SQL);
